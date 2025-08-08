@@ -466,7 +466,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
@@ -479,31 +479,35 @@ void motor_control_loop(void) {
         // }
     }
     
+    //temp test
+    motor_speed = 30;
+    set_motor_speed();
+    return;
     
-if (!idle_mode) {
+    if (!idle_mode) {
 
 
-    if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
-        (pressure < (pot_setting + sleep_deviation_scaled))) {
-                inside_count++;
-    } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
+        if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
+            (pressure < (pot_setting + sleep_deviation_scaled))) {
+                    inside_count++;
+        } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
 
 
-    if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
-        inside_count = 0;
-        motor_speed = IDLE_MOTOR_SPEED;
-        set_motor_speed();
-        pid_reset(&pressure_pid);
-        idle_mode = true;
-        lcd_print("        ");
-        lcd_print("IDLE");
-        seconds = 0;
-        _delay_ms(2000);
-        last_pot_setting = pot_setting;
-        return;
+        if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
+            inside_count = 0;
+            motor_speed = IDLE_MOTOR_SPEED;
+            set_motor_speed();
+            pid_reset(&pressure_pid);
+            idle_mode = true;
+            lcd_print("        ");
+            lcd_print("IDLE");
+            seconds = 0;
+            _delay_ms(2000);
+            last_pot_setting = pot_setting;
+            return;
+        }
+
     }
-
-}
 
     display_count++;
     display_count = display_count % 20;
