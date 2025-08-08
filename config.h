@@ -97,7 +97,8 @@ uint8_t idle_timeout = 60;
 float pid_integral = 0;
 float pid_last_error = 0;
 
-uint8_t inside_count = 0;
+uint16_t inside_count = 0;
+uint16_t total_count = 0;
 
 uint16_t power_timer = 0;
 
