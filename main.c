@@ -283,14 +283,14 @@ void pid_setup(pid_controller_t *pid) {
 		
         adc_value = read_adc(7);
         
-        idlecount = adc_value / 7 + 300;
+        idlecount = adc_value / 14;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "#:%2d", idlecount);
         lcd_print(buf);
         _delay_ms(100);
     }
-    IDLE_OUTSIDE_THRESHOLD = idlecount;
+    idle_decrease = idlecount;
 
 
     // // Setup KP
@@ -466,7 +466,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
@@ -486,7 +486,7 @@ if (!idle_mode) {
     if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
         (pressure < (pot_setting + sleep_deviation_scaled))) {
                 inside_count++;
-    } else if(inside_count >= 5) inside_count = inside_count - 5;
+    } else if(inside_count >= 5) inside_count = inside_count - idle_decrease;
 
 
     if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {

@@ -86,13 +86,14 @@ uint16_t last_motor_speed = 0;
 uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
-uint16_t IDLE_OUTSIDE_THRESHOLD = 0;
+uint16_t IDLE_OUTSIDE_THRESHOLD = 1000;
 
 
 uint8_t sleep_deviation = 0;
 float temp_sense = 0.0;
 uint8_t display_timer = 0;
 uint8_t idle_timeout = 60;
+uint8_t idle_decrease = 0;
 
 float pid_integral = 0;
 float pid_last_error = 0;
