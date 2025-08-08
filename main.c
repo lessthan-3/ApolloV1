@@ -424,10 +424,13 @@ void motor_control_loop(void) {
     if (idle_mode) {
         } else if (pressure < IDLE_PRESSURE_THRESHOLD) {
             // Exit idle if pressure dips below threshold
+            char buf1[9];
 			inside_count = 0;
             idle_mode = false;
             lcd_print("        ");
             lcd_print("RESUME");
+            snprintf(buf1, 9, "%2u", IDLE_OUTSIDE_THRESHOLD);
+            lcd_print(buf1);
             _delay_ms(500);
         } else {
             // Stay in idle mode: hold motor at 30%
