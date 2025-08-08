@@ -428,7 +428,7 @@ void motor_control_loop(void) {
             idle_mode = false;
             lcd_print("        ");
             lcd_print("RESUME");
-            _delay_ms(500);
+            _delay_ms(200);
         } else {
             // Stay in idle mode: hold motor at 30%
             motor_speed = IDLE_MOTOR_SPEED;
@@ -436,6 +436,7 @@ void motor_control_loop(void) {
             pid_reset(&pressure_pid);
             lcd_print("        ");
             lcd_print("IDLE");
+            _delay_ms(100);
             return;
         }
     }
@@ -466,7 +467,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", pressure, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
@@ -479,13 +480,7 @@ void motor_control_loop(void) {
         // }
     }
     
-    //temp test
-    motor_speed = 30;
-    display_count++;
-    display_count = display_count % 20;
-    set_motor_speed();
 
-    return;
     
     if (!idle_mode) {
 
