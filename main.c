@@ -422,7 +422,7 @@ void motor_control_loop(void) {
 
 
     if (idle_mode) {
-        } if (pressure < IDLE_PRESSURE_THRESHOLD) {
+        if (pressure < IDLE_PRESSURE_THRESHOLD) {
             // Exit idle if pressure dips below threshold
 			inside_count = 0;
             idle_mode = false;
@@ -438,7 +438,7 @@ void motor_control_loop(void) {
             lcd_print("IDLE");
             return;
         }
-    
+    }
     // Update motor speed from PID
     pressure_pid.setpoint = (float)pot_setting;
 
