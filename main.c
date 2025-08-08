@@ -481,7 +481,10 @@ void motor_control_loop(void) {
     
     //temp test
     motor_speed = 30;
+    display_count++;
+    display_count = display_count % 20;
     set_motor_speed();
+
     return;
     
     if (!idle_mode) {
@@ -559,7 +562,7 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
-    pid_setup(&pressure_pid);
+    //pid_setup(&pressure_pid);
 	
 	
 	
