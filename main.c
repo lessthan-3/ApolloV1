@@ -557,7 +557,7 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
-    //pid_setup(&pressure_pid);
+    pid_setup(&pressure_pid);
 	
 	
 	
