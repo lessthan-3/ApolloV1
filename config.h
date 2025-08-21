@@ -67,7 +67,7 @@
 
 #define MOTOR_LOOP_DELAY 8
 #define IDLE_MOTOR_SPEED 30
-#define IDLE_PRESSURE_THRESHOLD 180
+#define IDLE_PRESSURE_THRESHOLD 187
 
 volatile uint8_t over_temp_counter = 0;
 
@@ -86,7 +86,7 @@ uint16_t last_motor_speed = 0;
 uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
-uint16_t IDLE_OUTSIDE_THRESHOLD = 2000;
+uint16_t IDLE_OUTSIDE_THRESHOLD = 4000;
 
 
 uint8_t sleep_deviation = 0;

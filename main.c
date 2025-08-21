@@ -429,7 +429,14 @@ void motor_control_loop(void) {
             lcd_print("        ");
             lcd_print("RESUME");
             _delay_ms(200);
-        } else {
+        } else if (pot_setting > last_pot_setting + 3 || pot_setting < last_pot_setting - 3 ){
+            inside_count = 0;
+            idle_mode = false;
+            lcd_print("        ");
+            lcd_print("RESUME");
+            _delay_ms(200);
+        }
+        else  {
             // Stay in idle mode: hold motor at 30%
             motor_speed = IDLE_MOTOR_SPEED;
             set_motor_speed();
