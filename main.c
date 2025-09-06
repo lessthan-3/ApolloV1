@@ -64,13 +64,13 @@ uint16_t read_adc(uint8_t channel) {
     
     ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
     
-    for (uint8_t i = 0; i < 10; i++) {
+    for (uint8_t i = 0; i < 20; i++) {
         ADCSRA |= (1 << ADSC);
         while (ADCSRA & (1 << ADSC));
         sum += ADC;
     }
     
-    return (uint16_t)(sum / 10);
+    return (uint16_t)(sum / 20);
 }
 
 // Set motor speed (0-100%) - converts to delay value for triac
@@ -396,9 +396,11 @@ void motor_control_loop(void) {
         pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR;
     }
     
-    pressure = (pressure + pressure + last_pressure)/3;
+    pressure = (pressure)/2 + (last_pressure1 + last_pressure2 + last_pressure3)/6;
 
-    last_pressure = pressure; 
+    last_pressure3 = last_pressure2; 
+    last_pressure2 = last_pressure1; 
+    last_pressure1 = pressure; 
 
     // Read pot setting
     adc_value = read_adc(7);
