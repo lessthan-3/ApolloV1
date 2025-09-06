@@ -103,9 +103,7 @@ uint16_t total_count = 0;
 
 uint16_t power_timer = 0;
 
-uint16_t last_pressure1 =0;
-uint16_t last_pressure2 =0;
-uint16_t last_pressure3 =0;
+uint16_t last_pressure =0;
 
 // PID structure to hold state
 typedef struct {

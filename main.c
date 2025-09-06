@@ -396,11 +396,9 @@ void motor_control_loop(void) {
         pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR;
     }
     
-    pressure = (pressure)/2 + (last_pressure1 + last_pressure2 + last_pressure3)/6;
+    pressure = (pressure + pressure + last_pressure)/3;
 
-    last_pressure3 = last_pressure2; 
-    last_pressure2 = last_pressure1; 
-    last_pressure1 = pressure; 
+    last_pressure = pressure; 
 
     // Read pot setting
     adc_value = read_adc(7);
