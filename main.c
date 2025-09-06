@@ -485,7 +485,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", inside_count/2, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
