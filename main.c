@@ -395,6 +395,10 @@ void motor_control_loop(void) {
     } else {
         pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR;
     }
+    
+    pressure = (pressure + pressure + last_pressure)/3;
+
+    last_pressure = pressure; 
 
     // Read pot setting
     adc_value = read_adc(7);
@@ -405,6 +409,8 @@ void motor_control_loop(void) {
     } else {
         pot_setting = 0;
     }
+
+    
 
     sleep_deviation_scaled = sleep_deviation;
     
@@ -453,6 +459,11 @@ void motor_control_loop(void) {
     float pid_output = pid_calculate(&pressure_pid, (float)pressure, .1f);
     
     motor_speed = (uint16_t)(pid_output + 0.5f); 
+
+    if(pot_setting>800){
+        motor_speed = 100;
+        pid_reset(&pressure_pid);
+    }
 
     //bounding speed
     if (motor_speed > 100) motor_speed = 100;

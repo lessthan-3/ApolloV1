@@ -103,6 +103,8 @@ uint16_t total_count = 0;
 
 uint16_t power_timer = 0;
 
+uint16_t last_pressure =0;
+
 // PID structure to hold state
 typedef struct {
     float kp, ki, kd;           // PID gains
