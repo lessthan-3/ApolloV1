@@ -64,13 +64,13 @@ uint16_t read_adc(uint8_t channel) {
     
     ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
     
-    for (uint8_t i = 0; i < 20; i++) {
+    for (uint8_t i = 0; i < 10; i++) {
         ADCSRA |= (1 << ADSC);
         while (ADCSRA & (1 << ADSC));
         sum += ADC;
     }
     
-    return (uint16_t)(sum / 20);
+    return (uint16_t)(sum / 10);
 }
 
 // Set motor speed (0-100%) - converts to delay value for triac
@@ -283,7 +283,7 @@ void pid_setup(pid_controller_t *pid) {
 		
         adc_value = read_adc(7);
         
-        idlecount = adc_value / 14;
+        idlecount = adc_value / 4;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "#:%2d", idlecount);
@@ -460,11 +460,6 @@ void motor_control_loop(void) {
     
     motor_speed = (uint16_t)(pid_output + 0.5f); 
 
-    if(pot_setting>800){
-        motor_speed = 100;
-        pid_reset(&pressure_pid);
-    }
-
     //bounding speed
     if (motor_speed > 100) motor_speed = 100;
     if (motor_speed < 10) motor_speed = 10;
@@ -485,7 +480,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", inside_count/2, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
