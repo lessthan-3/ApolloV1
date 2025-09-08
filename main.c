@@ -254,105 +254,105 @@ void pid_setup(pid_controller_t *pid) {
 
 
         // Setup KP
-    // lcd_print("        ");
-    // lcd_print("SLEEP LIM");
-    // _delay_ms(1000);
+    lcd_print("        ");
+    lcd_print("SLEEP LIM");
+    _delay_ms(1000);
     
     uint16_t while_ticks = 0;
-	// uint8_t delay = 0;
-    // while (while_ticks < MAX_WHILE_TICKS) {
-	// 	while_ticks++;
-		
-    //     adc_value = read_adc(7);
-        
-    //     delay = adc_value / 14;
-    //     lcd_print("        ");
-    //     // Display KP value with 1 decimal place
-    //     snprintf(buf, 9, "P:%2d", delay);
-    //     lcd_print(buf);
-    //     _delay_ms(100);
-    // }
-    // sleep_deviation = delay;
-    
-    sleep_deviation = 20;
-
-    // while_ticks = 0;
-	// uint16_t idlecount = 0;
-    // while (while_ticks < MAX_WHILE_TICKS) {
-	// 	while_ticks++;
-		
-    //     adc_value = read_adc(7);
-        
-    //     idlecount = adc_value / 4;
-    //     lcd_print("        ");
-    //     // Display KP value with 1 decimal place
-    //     snprintf(buf, 9, "#:%2d", idlecount);
-    //     lcd_print(buf);
-    //     _delay_ms(100);
-    // }
-    // idle_decrease = idlecount;
-
-    idle_decrease = 100;
-    // Setup KP
-    lcd_print("        ");
-    lcd_print("SET  KP ");
-    _delay_ms(1000);
-    
-    while_ticks = 0;
+	uint8_t delay = 0;
     while (while_ticks < MAX_WHILE_TICKS) {
 		while_ticks++;
 		
         adc_value = read_adc(7);
-        float kp_value = (float)adc_value / 1278.0f * PID_SCALE_FACTOR;
         
+        delay = adc_value / 14;
         lcd_print("        ");
         // Display KP value with 1 decimal place
-        snprintf(buf, 9, "KP%2d.%02d", (int)kp_value, (int)((kp_value - (int)kp_value) * 100));
+        snprintf(buf, 9, "P:%2d", delay);
         lcd_print(buf);
         _delay_ms(100);
     }
-    adc_value = read_adc(7);
-    pid->kp = (float)adc_value / 1278.0f * PID_SCALE_FACTOR;
+    sleep_deviation = delay;
     
-    // Setup KI
-    lcd_print("        ");
-    lcd_print("SET  KI ");
-    _delay_ms(1000);
-	
-	while_ticks = 0;
-    
-    while (while_ticks < MAX_WHILE_TICKS) {
-        adc_value = read_adc(7);
-		while_ticks++;
-        float ki_value = (float)adc_value / 2557.5f * PID_SCALE_FACTOR; 
-        
-        lcd_print("        ");
-        snprintf(buf, 9, "KI .%2d%02d", (int)ki_value, (int)((ki_value - (int)ki_value) * 100));
-        lcd_print(buf);
-        _delay_ms(100);
-		
-    }
-    adc_value = read_adc(7);
-    pid->ki = (float)adc_value / 2557.5f * PID_SCALE_FACTOR / 10;
-    
-    // Setup KD
-    lcd_print("        ");
-    lcd_print("SET  KD ");
-    _delay_ms(1000);
-    
+    //sleep_deviation = 20;
+
     while_ticks = 0;
+	uint16_t idlecount = 0;
     while (while_ticks < MAX_WHILE_TICKS) {
+		while_ticks++;
+		
         adc_value = read_adc(7);
-        float kd_value = (float)adc_value / 2557.5f * PID_SCALE_FACTOR;
         
+        idlecount = adc_value / 2;
         lcd_print("        ");
-        snprintf(buf, 9, "KD %2d.%02d", (int)kd_value, (int)((kd_value - (int)kd_value) * 100));
+        // Display KP value with 1 decimal place
+        snprintf(buf, 9, "#:%2d", idlecount);
         lcd_print(buf);
         _delay_ms(100);
-		while_ticks++;
     }
-    adc_value = read_adc(7);
-    pid->kd = (float)adc_value / 2557.5f * PID_SCALE_FACTOR;
+    idle_decrease = idlecount;
+
+    // idle_decrease = 100;
+    // // Setup KP
+    // lcd_print("        ");
+    // lcd_print("SET  KP ");
+    // _delay_ms(1000);
+    
+    // while_ticks = 0;
+    // while (while_ticks < MAX_WHILE_TICKS) {
+	// 	while_ticks++;
+		
+    //     adc_value = read_adc(7);
+    //     float kp_value = (float)adc_value / 1278.0f * PID_SCALE_FACTOR;
+        
+    //     lcd_print("        ");
+    //     // Display KP value with 1 decimal place
+    //     snprintf(buf, 9, "KP%2d.%02d", (int)kp_value, (int)((kp_value - (int)kp_value) * 100));
+    //     lcd_print(buf);
+    //     _delay_ms(100);
+    // }
+    // adc_value = read_adc(7);
+    // pid->kp = (float)adc_value / 1278.0f * PID_SCALE_FACTOR;
+    
+    // // Setup KI
+    // lcd_print("        ");
+    // lcd_print("SET  KI ");
+    // _delay_ms(1000);
+	
+	// while_ticks = 0;
+    
+    // while (while_ticks < MAX_WHILE_TICKS) {
+    //     adc_value = read_adc(7);
+	// 	while_ticks++;
+    //     float ki_value = (float)adc_value / 2557.5f * PID_SCALE_FACTOR; 
+        
+    //     lcd_print("        ");
+    //     snprintf(buf, 9, "KI .%2d%02d", (int)ki_value, (int)((ki_value - (int)ki_value) * 100));
+    //     lcd_print(buf);
+    //     _delay_ms(100);
+		
+    // }
+    // adc_value = read_adc(7);
+    // pid->ki = (float)adc_value / 2557.5f * PID_SCALE_FACTOR / 10;
+    
+    // // Setup KD
+    // lcd_print("        ");
+    // lcd_print("SET  KD ");
+    // _delay_ms(1000);
+    
+    // while_ticks = 0;
+    // while (while_ticks < MAX_WHILE_TICKS) {
+    //     adc_value = read_adc(7);
+    //     float kd_value = (float)adc_value / 2557.5f * PID_SCALE_FACTOR;
+        
+    //     lcd_print("        ");
+    //     snprintf(buf, 9, "KD %2d.%02d", (int)kd_value, (int)((kd_value - (int)kd_value) * 100));
+    //     lcd_print(buf);
+    //     _delay_ms(100);
+	// 	while_ticks++;
+    // }
+    // adc_value = read_adc(7);
+    // pid->kd = (float)adc_value / 2557.5f * PID_SCALE_FACTOR;
 
 }
 
@@ -480,7 +480,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", pressure, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){

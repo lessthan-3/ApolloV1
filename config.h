@@ -48,9 +48,9 @@
 
 
 // PID Controller Default Constants
-#define PID_KP  11.0f    // Proportional gain
-#define PID_KI  0.5f    // Integral gain  
-#define PID_KD  1.5f    // Derivative gain
+#define PID_KP  0.5f    // Proportional gain
+#define PID_KI  0.2f    // Integral gain  
+#define PID_KD  0.2f    // Derivative gain
 
 // PID limits
 #define PID_OUTPUT_MIN  0.0f    // Minimum PID output
