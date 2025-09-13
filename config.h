@@ -87,6 +87,7 @@ uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
 uint16_t IDLE_OUTSIDE_THRESHOLD = 4000;
+uint16_t global_pressure = 0;
 
 
 uint8_t sleep_deviation = 0;
@@ -149,7 +150,7 @@ static bool idle_mode = false;
 void init_system(void);
 void configure_ports(void);
 void configure_timers(void);
-uint16_t read_adc(uint8_t channel);
+uint16_t read_adc(uint8_t channel, uint16_t ms);
 void set_motor_speed(void);
 void fire_triac(void);
 void pid_init(pid_controller_t *pid, float kp, float ki, float kd);
