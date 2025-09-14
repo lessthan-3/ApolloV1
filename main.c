@@ -411,7 +411,7 @@ void motor_control_loop(void) {
     last_pressure = pressure; 
 
     // Read pot setting
-    adc_value = read_adc(7,1);
+    adc_value = read_adc(7,2);
     pot_setting = adc_value;
     
     if (pot_setting >= 15) {
@@ -433,6 +433,7 @@ void motor_control_loop(void) {
         pid_reset(&pressure_pid); // Reset PID when turning off
         lcd_print("Off");
         idle_mode = false;
+        _delay_ms(300);
         return;
     }
 
