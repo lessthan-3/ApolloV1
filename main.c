@@ -23,9 +23,7 @@ void init_system(void) {
     
     //ADC
     ADMUX = (1 << REFS0);  // AVCC as reference
-    ADCSRA = (1 << ADEN) | (1 << ADATE) | (1 << ADPS2) | (1 << ADPS1); // Enable, auto trigger, prescaler 64
-    ADCSRB = 0; // Free running mode
-    ADCSRA |= (1 << ADSC); // Start conversion
+    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
     
     // INT0 for zero crossing detection
 
@@ -61,26 +59,18 @@ void configure_timers(void) {
     TCNT1 = 0;              // Clear counter
 }
 
-uint16_t read_adc(uint8_t channel, uint16_t ms) {
-    // Set channel (keep reference bits)
-    ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
-
-    // Wait for channel to settle (optional, a few cycles)
-    _delay_us(50);
-
+uint16_t read_adc(uint8_t channel) {
     uint32_t sum = 0;
-    uint16_t samples = 2 * ms; // 2kHz = 2 samples per ms
-    for (uint16_t i = 0; i < samples; i++) {
-        // Wait for conversion to complete
-        while (!(ADCSRA & (1 << ADIF)));
-        ADCSRA |= (1 << ADIF); // Clear flag by writing 1
-
+    
+    ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
+    
+    for (uint8_t i = 0; i < 10; i++) {
+        ADCSRA |= (1 << ADSC);
+        while (ADCSRA & (1 << ADSC));
         sum += ADC;
-
-        // Wait for next 2kHz sample (500us)
-        _delay_us(500);
     }
-    return (uint16_t)(sum / samples);
+    
+    return (uint16_t)(sum / 10);
 }
 
 // Set motor speed (0-100%) - converts to delay value for triac
@@ -273,7 +263,7 @@ void pid_setup(pid_controller_t *pid) {
     while (while_ticks < MAX_WHILE_TICKS) {
 		while_ticks++;
 		
-        adc_value = read_adc(7, 1);
+        adc_value = read_adc(7);
         
         delay = adc_value / 14;
         lcd_print("        ");
@@ -291,7 +281,7 @@ void pid_setup(pid_controller_t *pid) {
     while (while_ticks < MAX_WHILE_TICKS) {
 		while_ticks++;
 		
-        adc_value = read_adc(7, 1);
+        adc_value = read_adc(7);
         
         idlecount = adc_value / 2;
         lcd_print("        ");
@@ -393,13 +383,13 @@ void motor_control_loop(void) {
     uint8_t sleep_deviation_scaled = 0;
     
     // Read temperature
-    adc_value = read_adc(0, 1);
+    adc_value = read_adc(0);
     temp_sense = (adc_value - TEMP_OFFSET) * TEMP_MULT;
     
     overtemp_check(temp_sense);
     
     // Read pressure
-    adc_value = global_pressure;
+    adc_value = read_adc(6);
     if (adc_value < PRESS_OFFSET) {
         pressure = 0;
     } else {
@@ -411,7 +401,7 @@ void motor_control_loop(void) {
     last_pressure = pressure; 
 
     // Read pot setting
-    adc_value = read_adc(7,2);
+    adc_value = read_adc(7);
     pot_setting = adc_value;
     
     if (pot_setting >= 15) {
@@ -433,7 +423,6 @@ void motor_control_loop(void) {
         pid_reset(&pressure_pid); // Reset PID when turning off
         lcd_print("Off");
         idle_mode = false;
-        _delay_ms(300);
         return;
     }
 
@@ -491,7 +480,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", pressure, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
@@ -512,13 +501,7 @@ void motor_control_loop(void) {
         if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
             (pressure < (pot_setting + sleep_deviation_scaled))) {
                     inside_count++;
-        } else if(inside_count >= idle_decrease){
-            inside_count = inside_count - idle_decrease;
-            lcd_print("        ");
-             char buf2[9];
-            snprintf(buf2, 9, "%2u OUT", pressure);
-            lcd_print(buf2);
-        } 
+        } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
 
 
         if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
@@ -593,7 +576,7 @@ int main(void) {
 	
     while (1) {
         motor_control_loop();
-        global_pressure = read_adc(6, MOTOR_LOOP_DELAY);
+        _delay_ms(MOTOR_LOOP_DELAY);
     }
     
     return 0;

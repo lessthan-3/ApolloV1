@@ -90,11 +90,11 @@ uint16_t IDLE_OUTSIDE_THRESHOLD = 4000;
 uint16_t global_pressure = 0;
 
 
-uint8_t sleep_deviation = 50;
+uint8_t sleep_deviation = 20;
 float temp_sense = 0.0;
 uint8_t display_timer = 0;
 uint8_t idle_timeout = 60;
-uint8_t idle_decrease = 100;
+uint8_t idle_decrease = 1000;
 
 float pid_integral = 0;
 float pid_last_error = 0;
@@ -150,7 +150,7 @@ static bool idle_mode = false;
 void init_system(void);
 void configure_ports(void);
 void configure_timers(void);
-uint16_t read_adc(uint8_t channel, uint16_t ms);
+uint16_t read_adc(uint8_t channel);
 void set_motor_speed(void);
 void fire_triac(void);
 void pid_init(pid_controller_t *pid, float kp, float ki, float kd);
