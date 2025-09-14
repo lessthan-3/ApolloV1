@@ -512,7 +512,13 @@ void motor_control_loop(void) {
         if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
             (pressure < (pot_setting + sleep_deviation_scaled))) {
                     inside_count++;
-        } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
+        } else if(inside_count >= idle_decrease){
+            inside_count = inside_count - idle_decrease;
+            lcd_print("        ");
+             char buf2[9];
+            snprintf(buf2, 9, "%2u OUT", pressure);
+            lcd_print(buf2);
+        } 
 
 
         if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
