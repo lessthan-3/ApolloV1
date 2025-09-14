@@ -94,7 +94,7 @@ uint8_t sleep_deviation = 50;
 float temp_sense = 0.0;
 uint8_t display_timer = 0;
 uint8_t idle_timeout = 60;
-uint8_t idle_decrease = 500;
+uint8_t idle_decrease = 100;
 
 float pid_integral = 0;
 float pid_last_error = 0;
