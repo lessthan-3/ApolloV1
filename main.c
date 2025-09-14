@@ -502,6 +502,7 @@ void motor_control_loop(void) {
             (pressure < (pot_setting + sleep_deviation_scaled))) {
                     inside_count++;
         } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
+        else inside_count = 0;
 
 
         if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
