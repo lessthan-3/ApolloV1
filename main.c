@@ -69,7 +69,7 @@ uint16_t read_adc(uint8_t channel, uint16_t ms) {
     _delay_us(50);
 
     uint32_t sum = 0;
-    uint16_t samples = 8 * ms; // 2kHz = 2 samples per ms
+    uint16_t samples = 2 * ms; // 2kHz = 2 samples per ms
     for (uint16_t i = 0; i < samples; i++) {
         // Wait for conversion to complete
         while (!(ADCSRA & (1 << ADIF)));
@@ -78,7 +78,7 @@ uint16_t read_adc(uint8_t channel, uint16_t ms) {
         sum += ADC;
 
         // Wait for next 2kHz sample (500us)
-        _delay_us(125);
+        _delay_us(500);
     }
     return (uint16_t)(sum / samples);
 }
