@@ -490,7 +490,7 @@ void motor_control_loop(void) {
         char buf[9];
 
 
-        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
+        snprintf(buf, 9, "%2u>%2u", pressure, pot_setting);
         lcd_print(buf);
 
         // if(pot_setting > 800){
@@ -580,7 +580,7 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
-    pid_setup(&pressure_pid);
+    //pid_setup(&pressure_pid);
 	
 	
 	
