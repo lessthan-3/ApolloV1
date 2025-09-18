@@ -90,7 +90,7 @@ uint16_t IDLE_OUTSIDE_THRESHOLD = 4000;
 uint16_t global_pressure = 0;
 
 
-uint8_t sleep_deviation = 10;
+uint8_t sleep_deviation = 13;
 float temp_sense = 0.0;
 uint8_t display_timer = 0;
 uint8_t idle_timeout = 60;
