@@ -255,7 +255,7 @@ void pid_setup(pid_controller_t *pid) {
 
         // Setup KP
     lcd_print("        ");
-    lcd_print("SLEEP LIM");
+    lcd_print("Wakeup");
     _delay_ms(1000);
     
     uint16_t while_ticks = 0;
@@ -265,32 +265,32 @@ void pid_setup(pid_controller_t *pid) {
 		
         adc_value = read_adc(7);
         
-        delay = adc_value / 14;
+        delay = adc_value / 4;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "P:%2d", delay);
         lcd_print(buf);
         _delay_ms(100);
     }
-    sleep_deviation = delay;
+    idle_pressure_threshold = delay;
     
     //sleep_deviation = 20;
 
-    while_ticks = 0;
-	uint16_t idlecount = 0;
-    while (while_ticks < MAX_WHILE_TICKS) {
-		while_ticks++;
+    // while_ticks = 0;
+	// uint16_t idlecount = 0;
+    // while (while_ticks < MAX_WHILE_TICKS) {
+	// 	while_ticks++;
 		
-        adc_value = read_adc(7);
+    //     adc_value = read_adc(7);
         
-        idlecount = adc_value / 2;
-        lcd_print("        ");
-        // Display KP value with 1 decimal place
-        snprintf(buf, 9, "#:%2d", idlecount);
-        lcd_print(buf);
-        _delay_ms(100);
-    }
-    idle_decrease = idlecount;
+    //     idlecount = adc_value / 2;
+    //     lcd_print("        ");
+    //     // Display KP value with 1 decimal place
+    //     snprintf(buf, 9, "#:%2d", idlecount);
+    //     lcd_print(buf);
+    //     _delay_ms(100);
+    // }
+    // idle_decrease = idlecount;
 
     // idle_decrease = 100;
     // // Setup KP
@@ -428,7 +428,7 @@ void motor_control_loop(void) {
 
 
     if (idle_mode) {
-        if (pressure < IDLE_PRESSURE_THRESHOLD) {
+        if (pressure < idle_pressure_threshold) {
             // Exit idle if pressure dips below threshold
 			inside_count = 0;
             idle_mode = false;
@@ -571,7 +571,7 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
-    //pid_setup(&pressure_pid);
+    pid_setup(&pressure_pid);
 	
 	
 	
