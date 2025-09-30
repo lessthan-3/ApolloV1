@@ -142,7 +142,10 @@ ISR(INT0_vect) {
         zc_time2 = TCNT1;
         zc_count++;
         zc_ready = true;
-    }}
+    } else {
+        zc_ready = true;
+    } 
+    }
 
 
     // Zero crossing detected - start delay timer for triac firing
@@ -599,14 +602,17 @@ int main(void) {
     if(maxdelay== MAXDELAY50){
         lcd_print("        ");
         lcd_print("50Hz AC");
+        _delay_ms(500);
     }
     else if(maxdelay == MAXDELAY){
         lcd_print("        ");
         lcd_print("60Hz AC");
+        _delay_ms(500);
     }
     else{
         lcd_print("        ");
         lcd_print("Restart");
+        _delay_ms(500);
         return 0;
     }
 
