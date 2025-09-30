@@ -72,6 +72,12 @@
 volatile uint8_t over_temp_counter = 0;
 
 
+#define MAXDELAY 255
+#define MAXDELAY50 310 
+#define MINDELAY 35
+
+static uint8_t maxdelay = MAXDELAY;
+
 
 
 #define SLEEP_CHECK_INTERVAL 50  // each worth 160 ms 
@@ -86,8 +92,14 @@ uint16_t last_motor_speed = 0;
 uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
-uint16_t IDLE_OUTSIDE_THRESHOLD = 4000;
+uint16_t IDLE_OUTSIDE_THRESHOLD = 500;
 uint16_t global_pressure = 0;
+
+volatile uint16_t zc_time1 = 0;
+volatile uint16_t zc_time2 = 0;
+volatile uint16_t zc_count = 0;
+volatile bool zc_ready = false;
+
 
 uint16_t idle_pressure_threshold = IDLE_PRESSURE_THRESHOLD;
 

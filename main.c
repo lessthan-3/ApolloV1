@@ -11,8 +11,31 @@
 
 
 
+// Call this in init_system() after configuring timers
+uint8_t detect_ac_frequency(void) {
+    // Start Timer1 with prescaler 256
+    TCCR1B = (1 << WGM12) | (1 << CS12);
+    TCNT1 = 0;
+    zc_ready = false;
 
+    // Wait for two zero crossings
+    while (!zc_ready);
 
+    uint16_t period = zc_time2 - zc_time1; // Timer ticks between zero crossings
+
+    // Stop Timer1
+    TCCR1B = (1 << WGM12);
+
+    // 60Hz half-cycle: ~8333us / 32us = ~260 ticks
+    // 50Hz half-cycle: ~10000us / 32us = ~313 ticks
+    if (period > 290) {
+        maxdelay = MAXDELAY50;
+    } else if (period > 200) {
+        maxdelay = MAXDELAY;
+    } else {
+        return 0; // Unknown/error
+    }
+}
 
 void init_system(void) {
     cli();
@@ -31,6 +54,7 @@ void init_system(void) {
     EIMSK |= (1 << INT0);  // Enable INT0
     
     sei();
+    detect_ac_frequency();
 }
 
 void configure_ports(void) {
@@ -75,34 +99,23 @@ uint16_t read_adc(uint8_t channel) {
 
 // Set motor speed (0-100%) - converts to delay value for triac
 
-#define MAXDELAY 255
-#define MINDELAY 35
+
 
 
 void set_motor_speed(void) {
     uint16_t motor_speed_calc;
     
     if (motor_speed == 0) {
-        motor_pwm = MAXDELAY;
+        motor_pwm = maxdelay;
     } else {
 
         if (motor_speed > 100) motor_speed = 100;
         
-        if (FREQUENCY == 60) {  // 60Hz
             
-            motor_speed_calc = motor_speed * MAXDELAY / 100;
+        motor_speed_calc = motor_speed * maxdelay / 100;
 
-            motor_pwm = MAXDELAY - motor_speed_calc; 
-            if (motor_pwm < MINDELAY) motor_pwm = MINDELAY;
-        }
-        else{ // Need to adjust for 
-                        
-            motor_speed_calc = motor_speed * MAXDELAY / 100;
-
-            motor_pwm = MAXDELAY - motor_speed_calc; 
-            if (motor_pwm < MINDELAY) motor_pwm = MINDELAY;
-
-        }
+        motor_pwm = maxdelay - motor_speed_calc; 
+        if (motor_pwm < MINDELAY) motor_pwm = MINDELAY;
     }
 }
 
@@ -120,9 +133,20 @@ void fire_triac(void) {
 
 // Zero crossing interrupt - start timing for triac firing
 ISR(INT0_vect) {
+
+    if(!zc_ready){
+    if (zc_count == 0) {
+        zc_time1 = TCNT1;
+        zc_count++;
+    } else if (zc_count == 1) {
+        zc_time2 = TCNT1;
+        zc_count++;
+    }}
+
+
     // Zero crossing detected - start delay timer for triac firing
     
-    if (motor_pwm < MAXDELAY) {  
+    else if (motor_pwm < maxdelay) {  
         OCR1A = motor_pwm;  // Set delay time
         TCNT1 = 0;          // Reset timer
 
@@ -571,6 +595,21 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
+    if(maxdelay== MAXDELAY50){
+        lcd_print("        ");
+        lcd_print("50Hz AC");
+    }
+    else if(maxdelay == MAXDELAY){
+        lcd_print("        ");
+        lcd_print("60Hz AC");
+    }
+    else{
+        lcd_print("        ");
+        lcd_print("Restart");
+        return 0;
+    }
+
+
     pid_setup(&pressure_pid);
 	
 	
