@@ -141,6 +141,7 @@ ISR(INT0_vect) {
     } else if (zc_count == 1) {
         zc_time2 = TCNT1;
         zc_count++;
+        zc_ready = true;
     }}
 
 
