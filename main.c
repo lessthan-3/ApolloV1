@@ -54,7 +54,8 @@ void init_system(void) {
     EIMSK |= (1 << INT0);  // Enable INT0
     
     sei();
-    detect_ac_frequency();
+    //detect_ac_frequency();
+    maxdelay = MAXDELAY;
 }
 
 void configure_ports(void) {
