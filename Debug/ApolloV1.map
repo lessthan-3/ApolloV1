@@ -878,13 +878,13 @@ END GROUP
  .debug_frame   0x00000000       0xa0 lcd.o
  .debug_frame   0x000000a0      0x2bc main.o
 
-.debug_str      0x00000000      0x90b
+.debug_str      0x00000000      0x932
  *(.debug_str)
  .debug_str     0x00000000      0x264 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega168pb/avr5/crtatmega168pb.o
  .debug_str     0x00000264      0x1e7 lcd.o
                                 0x225 (size before relaxing)
- .debug_str     0x0000044b      0x4c0 main.o
-                                0x6d6 (size before relaxing)
+ .debug_str     0x0000044b      0x4e7 main.o
+                                0x6bb (size before relaxing)
 
 .debug_loc      0x00000000     0x121e
  *(.debug_loc)

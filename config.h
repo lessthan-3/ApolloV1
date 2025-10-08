@@ -76,7 +76,7 @@ volatile uint8_t over_temp_counter = 0;
 #define MAXDELAY50 310 
 #define MINDELAY 35
 
-static uint16_t maxdelay = MAXDELAY;
+static uint16_t maxdelay = MAXDELAY50;
 
 
 

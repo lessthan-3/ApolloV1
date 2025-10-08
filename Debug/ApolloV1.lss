@@ -23,11 +23,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   9 .debug_frame  0000035c  00000000  00000000  00005490  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    0000090b  00000000  00000000  000057ec  2**0
+ 10 .debug_str    00000932  00000000  00000000  000057ec  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    0000121e  00000000  00000000  000060f7  2**0
+ 11 .debug_loc    0000121e  00000000  00000000  0000611e  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000100  00000000  00000000  00007315  2**0
+ 12 .debug_ranges 00000100  00000000  00000000  0000733c  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -289,17 +289,9 @@ Disassembly of section .text:
      21a:	08 95       	ret
 
 0000021c <lcd_print>:
-	_delay_ms(2);
-}
-
-
-
-void lcd_print(const char* str) {
      21c:	cf 93       	push	r28
      21e:	df 93       	push	r29
      220:	ec 01       	movw	r28, r24
-	//lcd_clear();
-	lcd_command(0x80);
      222:	80 e8       	ldi	r24, 0x80	; 128
      224:	0e 94 84 00 	call	0x108	; 0x108 <lcd_command>
      228:	8f e9       	ldi	r24, 0x9F	; 159
@@ -309,25 +301,11 @@ void lcd_print(const char* str) {
      230:	00 c0       	rjmp	.+0      	; 0x232 <lcd_print+0x16>
      232:	00 00       	nop
      234:	03 c0       	rjmp	.+6      	; 0x23c <lcd_print+0x20>
-	_delay_ms(2);
-	while (*str) {
-		lcd_data((uint8_t)(*str));
      236:	0e 94 9a 00 	call	0x134	; 0x134 <lcd_data>
-		str++;
      23a:	21 96       	adiw	r28, 0x01	; 1
-
-void lcd_print(const char* str) {
-	//lcd_clear();
-	lcd_command(0x80);
-	_delay_ms(2);
-	while (*str) {
      23c:	88 81       	ld	r24, Y
      23e:	81 11       	cpse	r24, r1
      240:	fa cf       	rjmp	.-12     	; 0x236 <lcd_print+0x1a>
-		lcd_data((uint8_t)(*str));
-		str++;
-	}
-}
      242:	df 91       	pop	r29
      244:	cf 91       	pop	r28
      246:	08 95       	ret
