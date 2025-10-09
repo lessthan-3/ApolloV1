@@ -356,8 +356,8 @@ void display_shutdown(void) {
      29c:	81 60       	ori	r24, 0x01	; 1
      29e:	8d bb       	out	0x1d, r24	; 29
      2a0:	78 94       	sei
-     2a2:	8f ef       	ldi	r24, 0xFF	; 255
-     2a4:	90 e0       	ldi	r25, 0x00	; 0
+     2a2:	86 e3       	ldi	r24, 0x36	; 54
+     2a4:	91 e0       	ldi	r25, 0x01	; 1
      2a6:	90 93 0a 01 	sts	0x010A, r25	; 0x80010a <maxdelay+0x1>
      2aa:	80 93 09 01 	sts	0x0109, r24	; 0x800109 <maxdelay>
      2ae:	08 95       	ret

@@ -55,7 +55,7 @@ void init_system(void) {
     
     sei();
     //detect_ac_frequency();
-    maxdelay = MAXDELAY;
+    maxdelay = MAXDELAY50;
 }
 
 void configure_ports(void) {
