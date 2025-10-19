@@ -42,7 +42,10 @@
 #define TEMP_MULT -0.87
 #define TEMP_OFFSET 210
 
+#define FILTER_TMP 115
 #define OVERTEMP_THRESHOLD 130
+#define OVERTEMP_EXIT 100
+
 #define IDLE_TIMEOUT_SEC   60
 #define POWER_DOWN_SEC     900
 
@@ -93,6 +96,10 @@ uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
 uint16_t IDLE_OUTSIDE_THRESHOLD = 500;
+uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 3333;
+uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 3666;
+uint8_t idle_state = 0;
+
 uint16_t global_pressure = 0;
 
 volatile uint16_t zc_time1 = 0;
@@ -119,6 +126,8 @@ uint16_t total_count = 0;
 uint16_t power_timer = 0;
 
 uint16_t last_pressure =0;
+
+uint16_t idle_range = 8;
 
 // PID structure to hold state
 typedef struct {

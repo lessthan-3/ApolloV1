@@ -11,6 +11,8 @@
 
 
 
+
+
 // Call this in init_system() after configuring timers
 uint8_t detect_ac_frequency(void) {
     // Start Timer1 with prescaler 256
@@ -28,6 +30,13 @@ uint8_t detect_ac_frequency(void) {
 
     // 60Hz half-cycle: ~8333us / 32us = ~260 ticks
     // 50Hz half-cycle: ~10000us / 32us = ~313 ticks
+
+    char buf[9];
+    lcd_print("        ");
+        // Display KP value with 1 decimal place
+    snprintf(buf, 9, "T:%2u", period);
+    lcd_print(buf);
+    _delay_ms(5000);
     if (period > 290) {
         maxdelay = MAXDELAY50;
     } else if (period > 200) {
@@ -35,6 +44,7 @@ uint8_t detect_ac_frequency(void) {
     } else {
         return 0; // Unknown/error
     }
+    
 }
 
 void init_system(void) {
@@ -294,14 +304,14 @@ void pid_setup(pid_controller_t *pid) {
 		
         adc_value = read_adc(7);
         
-        delay = adc_value / 4;
+        delay = adc_value / 10;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "P:%2d", delay);
         lcd_print(buf);
         _delay_ms(100);
     }
-    idle_pressure_threshold = delay;
+    idle_range = delay;
     
     //sleep_deviation = 20;
 
@@ -387,6 +397,11 @@ void pid_setup(pid_controller_t *pid) {
 
 
 void overtemp_check(float temp_sense){
+    if (temp_sense > FILTER_TMP){
+        lcd_print("        ");
+        lcd_print("CHK FLTR");
+        _delay_ms(1000);
+    }
     if (temp_sense > OVERTEMP_SETPOINT) {
         if (over_temp_counter <= 50) {
             over_temp_counter++;
@@ -400,6 +415,12 @@ void overtemp_check(float temp_sense){
         }
     } else {
         if (over_temp_counter > 0) over_temp_counter--;
+    }
+    if (temp_sense <= OVERTEMP_EXIT && over_temp_flag == true ){
+        over_temp_flag = false;
+        lcd_print("        ");
+        lcd_print("START");
+        _delay_ms(1000);
     }
 }
 
@@ -416,6 +437,10 @@ void motor_control_loop(void) {
     temp_sense = (adc_value - TEMP_OFFSET) * TEMP_MULT;
     
     overtemp_check(temp_sense);
+
+    if(over_temp_flag){
+        return;
+    }
     
     // Read pressure
     adc_value = read_adc(6);
@@ -476,9 +501,9 @@ void motor_control_loop(void) {
             motor_speed = IDLE_MOTOR_SPEED;
             set_motor_speed();
             pid_reset(&pressure_pid);
-            lcd_print("        ");
-            lcd_print("IDLE");
-            _delay_ms(100);
+            //lcd_print("        ");
+            //lcd_print("IDLE");
+            //_delay_ms(100);
             return;
         }
     }
@@ -508,10 +533,14 @@ void motor_control_loop(void) {
         lcd_print("        ");
         char buf[9];
 
+        if(idle_state == 2){
+            lcd_print("IDLESOON");
+        }  else {
+            snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
+            lcd_print(buf);
 
-        snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
-        lcd_print(buf);
-
+        }
+       
         // if(pot_setting > 800){
         //     snprintf(buf, 9, "%2u>MAX", print_pressure);
         //     lcd_print(buf);
@@ -533,7 +562,10 @@ void motor_control_loop(void) {
         } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
         else inside_count = 0;
 
-
+        if(inside_count >= IDLE_OUTSIDE_THRESHOLD_FIRST_WARN){
+            idle_state = 2;
+        } else idle_state = 0;
+        
         if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
             inside_count = 0;
             motor_speed = IDLE_MOTOR_SPEED;
@@ -543,8 +575,19 @@ void motor_control_loop(void) {
             lcd_print("        ");
             lcd_print("IDLE");
             seconds = 0;
-            _delay_ms(2000);
+            _delay_ms(6000);
+            adc_value = read_adc(6);
+            if (adc_value < PRESS_OFFSET) {
+                pressure = 0;
+            } else {
+                pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR;
+            }
+            lcd_print("        ");
+            lcd_print("PWRPAUSE");
+
             last_pot_setting = pot_setting;
+
+            idle_pressure_threshold = pressure - idle_range;
             return;
         }
 
@@ -600,6 +643,8 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
+    detect_ac_frequency();
+    //maxdelay = MAXDELAY50;
     if(maxdelay== MAXDELAY50){
         lcd_print("        ");
         lcd_print("50Hz AC");
@@ -618,7 +663,7 @@ int main(void) {
     }
 
 
-    pid_setup(&pressure_pid);
+    //pid_setup(&pressure_pid);
 	
 	
 	
