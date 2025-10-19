@@ -641,10 +641,16 @@ void display_overtemp(void) {
 void display_start(void) {
     lcd_print("        ");
     lcd_print("APOLLO");
-    _delay_ms(500);
+    _delay_ms(1000);
     lcd_print("        ");
-    lcd_print("START");
-    _delay_ms(500);
+    lcd_print("SPRAYERS");
+    _delay_ms(1000);
+    lcd_print("        ");
+    lcd_print("  HVLP");
+    _delay_ms(1000);
+    lcd_print("        ");
+    lcd_print(" START");
+    _delay_ms(2000);
 }
 
 
@@ -659,7 +665,6 @@ int main(void) {
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
     hour_meter_init();  // Initialize hour meter from EEPROM
     detect_ac_frequency();
-    //maxdelay = MAXDELAY50;
     if(maxdelay== MAXDELAY50){
         lcd_print("        ");
         lcd_print("50Hz AC");
