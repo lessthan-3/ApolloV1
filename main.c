@@ -26,7 +26,7 @@ uint8_t detect_ac_frequency(void) {
     uint16_t period = zc_time2 - zc_time1; // Timer ticks between zero crossings
 
     // Stop Timer1
-    TCCR1B = (1 << WGM12);
+    TCCR1B = (1 << WGM12); 
 
     // 60Hz half-cycle: ~8333us / 32us = ~260 ticks
     // 50Hz half-cycle: ~10000us / 32us = ~313 ticks
@@ -289,20 +289,16 @@ void pid_setup(pid_controller_t *pid) {
     uint16_t adc_value;
     char buf[9];
 
-
-
-
-        // Setup KP
+    // Setup KP
     lcd_print("        ");
-    lcd_print("Wakeup");
+    lcd_print("SETUP");
     _delay_ms(1000);
     
     uint16_t while_ticks = 0;
 	uint8_t delay = 0;
     while (while_ticks < MAX_WHILE_TICKS) {
 		while_ticks++;
-		
-        adc_value = read_adc(7);
+		adc_value = read_adc(7);
         
         delay = adc_value / 10;
         lcd_print("        ");
@@ -313,95 +309,73 @@ void pid_setup(pid_controller_t *pid) {
     }
     idle_range = delay;
     
-    //sleep_deviation = 20;
-
-    // while_ticks = 0;
-	// uint16_t idlecount = 0;
-    // while (while_ticks < MAX_WHILE_TICKS) {
-	// 	while_ticks++;
-		
-    //     adc_value = read_adc(7);
-        
-    //     idlecount = adc_value / 2;
-    //     lcd_print("        ");
-    //     // Display KP value with 1 decimal place
-    //     snprintf(buf, 9, "#:%2d", idlecount);
-    //     lcd_print(buf);
-    //     _delay_ms(100);
-    // }
-    // idle_decrease = idlecount;
-
-    // idle_decrease = 100;
-    // // Setup KP
-    // lcd_print("        ");
-    // lcd_print("SET  KP ");
-    // _delay_ms(1000);
-    
-    // while_ticks = 0;
-    // while (while_ticks < MAX_WHILE_TICKS) {
-	// 	while_ticks++;
-		
-    //     adc_value = read_adc(7);
-    //     float kp_value = (float)adc_value / 1278.0f * PID_SCALE_FACTOR;
-        
-    //     lcd_print("        ");
-    //     // Display KP value with 1 decimal place
-    //     snprintf(buf, 9, "KP%2d.%02d", (int)kp_value, (int)((kp_value - (int)kp_value) * 100));
-    //     lcd_print(buf);
-    //     _delay_ms(100);
-    // }
-    // adc_value = read_adc(7);
-    // pid->kp = (float)adc_value / 1278.0f * PID_SCALE_FACTOR;
-    
-    // // Setup KI
-    // lcd_print("        ");
-    // lcd_print("SET  KI ");
-    // _delay_ms(1000);
-	
-	// while_ticks = 0;
-    
-    // while (while_ticks < MAX_WHILE_TICKS) {
-    //     adc_value = read_adc(7);
-	// 	while_ticks++;
-    //     float ki_value = (float)adc_value / 2557.5f * PID_SCALE_FACTOR; 
-        
-    //     lcd_print("        ");
-    //     snprintf(buf, 9, "KI .%2d%02d", (int)ki_value, (int)((ki_value - (int)ki_value) * 100));
-    //     lcd_print(buf);
-    //     _delay_ms(100);
-		
-    // }
-    // adc_value = read_adc(7);
-    // pid->ki = (float)adc_value / 2557.5f * PID_SCALE_FACTOR / 10;
-    
-    // // Setup KD
-    // lcd_print("        ");
-    // lcd_print("SET  KD ");
-    // _delay_ms(1000);
-    
-    // while_ticks = 0;
-    // while (while_ticks < MAX_WHILE_TICKS) {
-    //     adc_value = read_adc(7);
-    //     float kd_value = (float)adc_value / 2557.5f * PID_SCALE_FACTOR;
-        
-    //     lcd_print("        ");
-    //     snprintf(buf, 9, "KD %2d.%02d", (int)kd_value, (int)((kd_value - (int)kd_value) * 100));
-    //     lcd_print(buf);
-    //     _delay_ms(100);
-	// 	while_ticks++;
-    // }
-    // adc_value = read_adc(7);
-    // pid->kd = (float)adc_value / 2557.5f * PID_SCALE_FACTOR;
-
 }
 
+// Hour meter functions
+
+// Initialize hour meter - read from EEPROM
+void hour_meter_init(void) {
+    // Read the stored hour meter value from EEPROM (stored as uint32_t)
+    hour_meter_tenths = eeprom_read_dword((uint32_t*)EEPROM_HOUR_METER_ADDR);
+    
+    // Sanity check - if EEPROM is uninitialized (0xFFFFFFFF), reset to 0
+    if (hour_meter_tenths == 0xFFFFFFFF) {
+        hour_meter_tenths = 0;
+        hour_meter_save();
+    }
+    
+    hour_meter_counter = 0;
+    motor_running = false;
+}
+
+// Update hour meter counter (called every motor control loop iteration)
+void hour_meter_update(void) {
+    // Only count when motor is actually running (not off, not in idle mode with very low speed)
+    if (motor_running) {
+        hour_meter_counter++;
+        
+        // Check if we've reached 0.1 hour of operation
+        // MOTOR_LOOP_DELAY is in ms, so we need to calculate cycles for 360 seconds (0.1 hour)
+        // 360 seconds = 360000 ms / MOTOR_LOOP_DELAY ms per cycle
+        if (hour_meter_counter >= (360000 / MOTOR_LOOP_DELAY)) {
+            hour_meter_tenths++;
+            hour_meter_counter = 0;
+            hour_meter_save();  // Save to EEPROM every 0.1 hour
+        }
+    }
+}
+
+// Save hour meter to EEPROM
+void hour_meter_save(void) {
+    eeprom_update_dword((uint32_t*)EEPROM_HOUR_METER_ADDR, hour_meter_tenths);
+}
+
+// Display hour meter on LCD
+void display_hour_meter(void) {
+    char buf[9];
+    uint32_t total_hours = hour_meter_tenths / 10;
+    uint8_t tenths = hour_meter_tenths % 10;
+    
+    lcd_print("        ");
+    
+    // Display format: "H:1234.5" for hours with one decimal place
+    if (total_hours > 9999) {
+        // If over 9999 hours, just show "H:9999.9"
+        snprintf(buf, 9, "H9999.%u", tenths);
+    } else {
+        snprintf(buf, 9, "H%4lu.%u", (unsigned long)total_hours, tenths);
+    }
+    
+    lcd_print(buf);
+}
 
 void overtemp_check(float temp_sense){
     if (temp_sense > FILTER_TMP){
-        lcd_print("        ");
-        lcd_print("CHK FLTR");
-        _delay_ms(1000);
+        check_filter = true;
+    } else {
+        check_filter = false;
     }
+
     if (temp_sense > OVERTEMP_SETPOINT) {
         if (over_temp_counter <= 50) {
             over_temp_counter++;
@@ -419,7 +393,7 @@ void overtemp_check(float temp_sense){
     if (temp_sense <= OVERTEMP_EXIT && over_temp_flag == true ){
         over_temp_flag = false;
         lcd_print("        ");
-        lcd_print("START");
+        lcd_print("RESTART");
         _delay_ms(1000);
     }
 }
@@ -439,6 +413,15 @@ void motor_control_loop(void) {
     overtemp_check(temp_sense);
 
     if(over_temp_flag){
+        return;
+    }
+    
+    // Check if system is in shutdown mode (after 15 min PowerPause timeout)
+    if(shutdown_flag){
+        motor_speed = 0;
+        set_motor_speed();
+        display_shutdown();
+        motor_running = false;
         return;
     }
     
@@ -468,30 +451,58 @@ void motor_control_loop(void) {
 
     sleep_deviation_scaled = sleep_deviation;
     
-    // Motor off if pot at zero
+    // Motor off if pot at zero - display hour meter
     if (pot_setting == 0) {
         lcd_print("        ");
         motor_speed = 0;
         idle_timer = 0;
         set_motor_speed();
         pid_reset(&pressure_pid); // Reset PID when turning off
-        lcd_print("Off");
+        motor_running = false;  // Motor is not running
+        display_hour_meter();  // Display hour meter when motor is off
         idle_mode = false;
         return;
     }
 
+    // Motor is running for hour meter purposes
+    motor_running = true;
+    
+    // Update hour meter
+    hour_meter_update();
+
 
     if (idle_mode) {
+        // Increment PowerPause timer (motor_control_loop is called every MOTOR_LOOP_DELAY ms)
+        // Calculate seconds: each loop is MOTOR_LOOP_DELAY ms, so increment every (1000/MOTOR_LOOP_DELAY) loops
+        static uint16_t powerpause_loop_counter = 0;
+        powerpause_loop_counter++;
+        if (powerpause_loop_counter >= (1000 / MOTOR_LOOP_DELAY)) {
+            powerpause_timer++;
+            powerpause_loop_counter = 0;
+            
+            // Check if 15 minutes have elapsed
+            if (powerpause_timer >= POWERPAUSE_TIMEOUT_SEC) {
+                shutdown_flag = true;
+                motor_speed = 0;
+                set_motor_speed();
+                motor_running = false;
+                display_shutdown();
+                return;
+            }
+        }
+        
         if (pressure < idle_pressure_threshold) {
-            // Exit idle if pressure dips below threshold
+            // Exit power pause if pressure dips below threshold
 			inside_count = 0;
             idle_mode = false;
+            powerpause_timer = 0;  // Reset timer when exiting PowerPause
             lcd_print("        ");
             lcd_print("RESUME");
             _delay_ms(200);
         } else if (pot_setting > last_pot_setting + 3 || pot_setting < last_pot_setting - 3 ){
             inside_count = 0;
             idle_mode = false;
+            powerpause_timer = 0;  // Reset timer when exiting PowerPause
             lcd_print("        ");
             lcd_print("RESUME");
             _delay_ms(200);
@@ -533,10 +544,12 @@ void motor_control_loop(void) {
         lcd_print("        ");
         char buf[9];
 
-        if(idle_state == 2){
+        if(check_filter){
+            lcd_print("CHK FLTR");
+        } else if(idle_state == 2){
             lcd_print("IDLESOON");
         }  else {
-            snprintf(buf, 9, "%2u>%2u", inside_count, pot_setting);
+            snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
             lcd_print(buf);
 
         }
@@ -572,6 +585,7 @@ void motor_control_loop(void) {
             set_motor_speed();
             pid_reset(&pressure_pid);
             idle_mode = true;
+            powerpause_timer = 0;  // Reset PowerPause timer when entering idle mode
             lcd_print("        ");
             lcd_print("IDLE");
             seconds = 0;
@@ -643,6 +657,7 @@ int main(void) {
     display_start();
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
+    hour_meter_init();  // Initialize hour meter from EEPROM
     detect_ac_frequency();
     //maxdelay = MAXDELAY50;
     if(maxdelay== MAXDELAY50){

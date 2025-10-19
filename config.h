@@ -147,6 +147,7 @@ typedef struct {
 // Global PID controller instance
 static pid_controller_t pressure_pid;
 
+bool check_filter = false;
 
 // Global variables
 volatile uint16_t time_counter = 0;
@@ -154,6 +155,13 @@ volatile uint16_t seconds = 0;
 volatile uint16_t idle_timer = 0;
 volatile bool timer_update_flag = false;
 volatile uint32_t hour_counter = 0;
+
+// Hour meter variables
+#define EEPROM_HOUR_METER_ADDR 0  // EEPROM address for hour meter storage
+#define HOUR_METER_UPDATE_INTERVAL 360  // Update EEPROM every 36 seconds (0.1 hour at 10Hz loop rate)
+volatile uint32_t hour_meter_tenths = 0;  // Total operating hours in 1/10th hour increments
+volatile uint16_t hour_meter_counter = 0;  // Counter for EEPROM update interval
+volatile bool motor_running = false;  // Flag to track if motor is actually running
 
 volatile uint16_t printtemp = 0;
 uint16_t ptemp = 0;
@@ -166,6 +174,11 @@ uint8_t frequency = 120;
 uint8_t motor_incr_max = 25;
 uint8_t motor_incr_max_down = 10;
 static bool idle_mode = false;
+
+// PowerPause shutdown variables
+#define POWERPAUSE_TIMEOUT_SEC 900  // 15 minutes = 900 seconds
+volatile uint16_t powerpause_timer = 0;  // Counts seconds in PowerPause mode
+volatile bool shutdown_flag = false;  // Set to true after 15 minutes in PowerPause
 
 
 
@@ -189,7 +202,11 @@ void display_start(void);
 
 void display_overtemp(void);
 
-
+// Hour meter functions
+void hour_meter_init(void);
+void hour_meter_update(void);
+void hour_meter_save(void);
+void display_hour_meter(void);
 
 #endif	/* CONFIG_H */
 
