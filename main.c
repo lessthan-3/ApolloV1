@@ -356,7 +356,7 @@ void display_hour_meter(void) {
     uint32_t total_hours = hour_meter_tenths / 10;
     uint8_t tenths = hour_meter_tenths % 10;
     
-    lcd_print("        ");
+    //lcd_print("        ");
     
     // Display format: "H:1234.5" for hours with one decimal place
     if (total_hours > 9999) {
@@ -367,6 +367,8 @@ void display_hour_meter(void) {
     }
     
     lcd_print(buf);
+
+    _delay_ms(400);
 }
 
 void overtemp_check(float temp_sense){
@@ -476,7 +478,7 @@ void motor_control_loop(void) {
         // Calculate seconds: each loop is MOTOR_LOOP_DELAY ms, so increment every (1000/MOTOR_LOOP_DELAY) loops
         static uint16_t powerpause_loop_counter = 0;
         powerpause_loop_counter++;
-        if (powerpause_loop_counter >= (1000 / MOTOR_LOOP_DELAY)) {
+        if (powerpause_loop_counter >= (24000 / MOTOR_LOOP_DELAY)) {
             powerpause_timer++;
             powerpause_loop_counter = 0;
             
@@ -664,7 +666,8 @@ int main(void) {
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
     hour_meter_init();  // Initialize hour meter from EEPROM
-    detect_ac_frequency();
+    //detect_ac_frequency();
+    maxdelay = MAXDELAY;
     if(maxdelay== MAXDELAY50){
         lcd_print("        ");
         lcd_print("50Hz AC");
