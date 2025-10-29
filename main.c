@@ -611,7 +611,7 @@ void motor_control_loop(void) {
         } else if(idle_state == 2){
             lcd_print("IDLESOON");  // 10 seconds before idle - intermittent beep
         }  else {
-            snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
+            snprintf(buf, 9, "%2u.%u PSI", print_pressure / 100, print_pressure % 100);
             lcd_print(buf);
 
         }
