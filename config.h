@@ -95,9 +95,18 @@ uint16_t last_motor_speed = 0;
 uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
-uint16_t IDLE_OUTSIDE_THRESHOLD = 500;
-uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 3333;
-uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 3666;
+
+
+uint16_t IDLE_OUTSIDE_THRESHOLD = 1000;
+uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 500;   // 10 seconds before idle (intermittent beep)
+uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 750;  // 5 seconds before idle (solid beep)
+
+
+
+// uint16_t IDLE_OUTSIDE_THRESHOLD = 500;
+// uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 3333;   // 10 seconds before idle (intermittent beep)
+// uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 4166;  // 5 seconds before idle (solid beep)
+
 uint8_t idle_state = 0;
 
 uint16_t global_pressure = 0;
@@ -180,6 +189,11 @@ static bool idle_mode = false;
 volatile uint16_t powerpause_timer = 0;  // Counts seconds in PowerPause mode
 volatile bool shutdown_flag = false;  // Set to true after 15 minutes in PowerPause
 
+// Beeper warning variables
+volatile uint8_t beeper_state = 0;  // 0=off, 1=intermittent, 2=solid
+volatile uint16_t beeper_counter = 0;  // Counter for beeper timing
+volatile bool beeper_on = false;  // Current beeper state
+
 
 
 // Function prototypes
@@ -207,6 +221,11 @@ void hour_meter_init(void);
 void hour_meter_update(void);
 void hour_meter_save(void);
 void display_hour_meter(void);
+
+// Beeper functions
+void beeper_on_func(void);
+void beeper_off_func(void);
+void beeper_update(void);
 
 #endif	/* CONFIG_H */
 

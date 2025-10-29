@@ -53,6 +53,8 @@ void init_system(void) {
 	lcd_init();
     configure_ports();
     configure_timers();
+
+    display_start();
     
     //ADC
     ADMUX = (1 << REFS0);  // AVCC as reference
@@ -62,6 +64,11 @@ void init_system(void) {
 
     EICRA |= (1 << ISC01) | (1 << ISC00);  // Rising edge trigger
     EIMSK |= (1 << INT0);  // Enable INT0
+
+    // Initialize beeper
+    beeper_state = 0;
+    beeper_counter = 0;
+    beeper_off_func();  // Ensure beeper starts off
     
     sei();
     //detect_ac_frequency();
@@ -358,15 +365,62 @@ void display_hour_meter(void) {
     
     lcd_print("        ");
     
-    // Display format: "H:1234.5" for hours with one decimal place
-    if (total_hours > 9999) {
-        // If over 9999 hours, just show "H:9999.9"
-        snprintf(buf, 9, "H9999.%u", tenths);
+    // Display format: "000.0 Hrs" for hours with one decimal place
+    if (total_hours > 999) {
+        // If over 999 hours, just show "999.9Hrs"
+        snprintf(buf, 9, "999.%uHrs", tenths);
     } else {
-        snprintf(buf, 9, "H%4lu.%u", (unsigned long)total_hours, tenths);
+        snprintf(buf, 9, "%03lu.%uHrs", (unsigned long)total_hours, tenths);
     }
     
     lcd_print(buf);
+}
+
+// Beeper functions
+
+// Turn beeper on
+void beeper_on_func(void) {
+    PORTC |= (1 << PC2);  // Set PC2 high to turn on beeper
+    beeper_on = true;
+}
+
+// Turn beeper off
+void beeper_off_func(void) {
+    PORTC &= ~(1 << PC2);  // Set PC2 low to turn off beeper
+    beeper_on = false;
+}
+
+// Update beeper based on idle state and timing
+void beeper_update(void) {
+    beeper_counter++;
+    
+    switch(beeper_state) {
+        case 0:  // Beeper off
+            beeper_off_func();
+            beeper_counter = 0;
+            break;
+            
+        case 1:  // Intermittent beep (10 seconds before idle)
+            // Beep pattern: 0.5s on, 1.5s off (2 second cycle)
+            // At 8ms loop delay: 0.5s = 62.5 loops, 1.5s = 187.5 loops
+            if (beeper_counter < 63) {  // ~0.5 seconds on
+                beeper_on_func();
+            } else if (beeper_counter < 250) {  // ~1.5 seconds off (total 2s cycle)
+                beeper_off_func();
+            } else {
+                beeper_counter = 0;  // Reset for next cycle
+            }
+            break;
+            
+        case 2:  // Solid beep (5 seconds before idle)
+            beeper_on_func();
+            break;
+            
+        default:
+            beeper_off_func();
+            beeper_state = 0;
+            break;
+    }
 }
 
 void overtemp_check(float temp_sense){
@@ -496,6 +550,8 @@ void motor_control_loop(void) {
 			inside_count = 0;
             idle_mode = false;
             powerpause_timer = 0;  // Reset timer when exiting PowerPause
+            beeper_state = 0;  // Turn off beeper when exiting PowerPause
+            beeper_off_func();
             lcd_print("        ");
             lcd_print("RESUME");
             _delay_ms(200);
@@ -503,6 +559,8 @@ void motor_control_loop(void) {
             inside_count = 0;
             idle_mode = false;
             powerpause_timer = 0;  // Reset timer when exiting PowerPause
+            beeper_state = 0;  // Turn off beeper when exiting PowerPause
+            beeper_off_func();
             lcd_print("        ");
             lcd_print("RESUME");
             _delay_ms(200);
@@ -546,8 +604,10 @@ void motor_control_loop(void) {
 
         if(check_filter){
             lcd_print("CHK FLTR");
+        } else if(idle_state == 3){
+            lcd_print("IDLE NOW");  // 5 seconds before idle - solid beep
         } else if(idle_state == 2){
-            lcd_print("IDLESOON");
+            lcd_print("IDLESOON");  // 10 seconds before idle - intermittent beep
         }  else {
             snprintf(buf, 9, "%2u>%2u", print_pressure, pot_setting);
             lcd_print(buf);
@@ -575,9 +635,20 @@ void motor_control_loop(void) {
         } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
         else inside_count = 0;
 
-        if(inside_count >= IDLE_OUTSIDE_THRESHOLD_FIRST_WARN){
-            idle_state = 2;
-        } else idle_state = 0;
+        // Update idle state and beeper warnings
+        if(inside_count >= IDLE_OUTSIDE_THRESHOLD_SECOND_WARN){
+            idle_state = 3;  // 5 seconds before idle - solid beep
+            beeper_state = 2;
+        } else if(inside_count >= IDLE_OUTSIDE_THRESHOLD_FIRST_WARN){
+            idle_state = 2;  // 10 seconds before idle - intermittent beep
+            beeper_state = 1;
+        } else {
+            idle_state = 0;  // Normal operation - no beep
+            beeper_state = 0;
+        }
+        
+        // Update beeper based on state
+        beeper_update();
         
         if (inside_count >= IDLE_OUTSIDE_THRESHOLD) {
             inside_count = 0;
@@ -586,6 +657,8 @@ void motor_control_loop(void) {
             pid_reset(&pressure_pid);
             idle_mode = true;
             powerpause_timer = 0;  // Reset PowerPause timer when entering idle mode
+            beeper_state = 0;  // Turn off beeper when entering idle mode
+            beeper_off_func();
             lcd_print("        ");
             lcd_print("IDLE");
             seconds = 0;
@@ -649,7 +722,7 @@ void display_start(void) {
     lcd_print("  HVLP");
     _delay_ms(1000);
     lcd_print("        ");
-    lcd_print(" START");
+    lcd_print("FW 1.0");
     _delay_ms(2000);
 }
 
@@ -660,21 +733,22 @@ int main(void) {
     
 
     init_system();
-    display_start();
+
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
     hour_meter_init();  // Initialize hour meter from EEPROM
-    detect_ac_frequency();
-    if(maxdelay== MAXDELAY50){
-        lcd_print("        ");
-        lcd_print("50Hz AC");
-        _delay_ms(500);
-    }
-    else if(maxdelay == MAXDELAY){
-        lcd_print("        ");
-        lcd_print("60Hz AC");
-        _delay_ms(500);
-    }
+    maxdelay = MAXDELAY;
+    //detect_ac_frequency();
+    // if(maxdelay== MAXDELAY50){
+    //     lcd_print("        ");
+    //     lcd_print("50Hz AC");
+    //     _delay_ms(500);
+    // }
+    // else if(maxdelay == MAXDELAY){
+    //     lcd_print("        ");
+    //     lcd_print("60Hz AC");
+    //     _delay_ms(500);
+    // }
     else{
         lcd_print("        ");
         lcd_print("Restart");
