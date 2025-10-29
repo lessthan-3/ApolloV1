@@ -363,7 +363,7 @@ void display_hour_meter(void) {
     uint32_t total_hours = hour_meter_tenths / 10;
     uint8_t tenths = hour_meter_tenths % 10;
     
-    lcd_print("        ");
+    //lcd_print("        ");
     
     // Display format: "000.0 Hrs" for hours with one decimal place
     if (total_hours > 999) {
@@ -374,6 +374,8 @@ void display_hour_meter(void) {
     }
     
     lcd_print(buf);
+
+    _delay_ms(400);
 }
 
 // Beeper functions
@@ -530,7 +532,7 @@ void motor_control_loop(void) {
         // Calculate seconds: each loop is MOTOR_LOOP_DELAY ms, so increment every (1000/MOTOR_LOOP_DELAY) loops
         static uint16_t powerpause_loop_counter = 0;
         powerpause_loop_counter++;
-        if (powerpause_loop_counter >= (1000 / MOTOR_LOOP_DELAY)) {
+        if (powerpause_loop_counter >= (24000 / MOTOR_LOOP_DELAY)) {
             powerpause_timer++;
             powerpause_loop_counter = 0;
             
