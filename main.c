@@ -611,7 +611,7 @@ void motor_control_loop(void) {
         } else if(idle_state == 2){
             lcd_print("IDLESOON");  // 10 seconds before idle - intermittent beep
         }  else {
-            snprintf(buf, 9, "%2u.%u PSI", print_pressure / 100, print_pressure % 100);
+            snprintf(buf, 9, "%u.%u PSI", print_pressure / 100, print_pressure % 100);
             lcd_print(buf);
 
         }
@@ -751,12 +751,12 @@ int main(void) {
     //     lcd_print("60Hz AC");
     //     _delay_ms(500);
     // }
-    else{
-        lcd_print("        ");
-        lcd_print("Restart");
-        _delay_ms(500);
-        return 0;
-    }
+    // else{
+    //     lcd_print("        ");
+    //     lcd_print("Restart");
+    //     _delay_ms(500);
+    //     return 0;
+    // }
 
 
     //pid_setup(&pressure_pid);

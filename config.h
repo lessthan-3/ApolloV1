@@ -97,15 +97,15 @@ static bool over_temp_flag = false;
 uint16_t display_count = 0;
 
 
-uint16_t IDLE_OUTSIDE_THRESHOLD = 1000;
-uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 500;   // 10 seconds before idle (intermittent beep)
-uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 750;  // 5 seconds before idle (solid beep)
+// uint16_t IDLE_OUTSIDE_THRESHOLD = 1000;
+// uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 500;   // 10 seconds before idle (intermittent beep)
+// uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 750;  // 5 seconds before idle (solid beep)
 
+//15 seconds per 1000 units  
 
-
-// uint16_t IDLE_OUTSIDE_THRESHOLD = 500;
-// uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 3333;   // 10 seconds before idle (intermittent beep)
-// uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 4166;  // 5 seconds before idle (solid beep)
+uint16_t IDLE_OUTSIDE_THRESHOLD = 4000;
+uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 3333;
+uint16_t IDLE_OUTSIDE_THRESHOLD_SECOND_WARN = 3666;
 
 uint8_t idle_state = 0;
 
