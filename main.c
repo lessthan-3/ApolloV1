@@ -344,7 +344,7 @@ void hour_meter_update(void) {
         // Check if we've reached 0.1 hour of operation
         // MOTOR_LOOP_DELAY is in ms, so we need to calculate cycles for 360 seconds (0.1 hour)
         // 360 seconds = 360000 ms / MOTOR_LOOP_DELAY ms per cycle
-        if (hour_meter_counter >= (360000 / MOTOR_LOOP_DELAY)) {
+        if (hour_meter_counter >= (360000 / (MOTOR_LOOP_TIME))) {
             hour_meter_tenths++;
             hour_meter_counter = 0;
             hour_meter_save();  // Save to EEPROM every 0.1 hour
@@ -405,9 +405,9 @@ void beeper_update(void) {
         case 1:  // Intermittent beep (10 seconds before idle)
             // Beep pattern: 0.5s on, 1.5s off (2 second cycle)
             // At 8ms loop delay: 0.5s = 62.5 loops, 1.5s = 187.5 loops
-            if (beeper_counter < 63) {  // ~0.5 seconds on
+            if (beeper_counter < 20) {  // ~0.5 seconds on
                 beeper_on_func();
-            } else if (beeper_counter < 250) {  // ~1.5 seconds off (total 2s cycle)
+            } else if (beeper_counter < 100) {  // ~1.5 seconds off (total 2s cycle)
                 beeper_off_func();
             } else {
                 beeper_counter = 0;  // Reset for next cycle
@@ -425,7 +425,19 @@ void beeper_update(void) {
     }
 }
 
-void overtemp_check(float temp_sense){
+void overtemp_check(uint16_t temp_sense){
+    if(over_temp_flag == true){
+        if (temp_sense <= OVERTEMP_EXIT){
+            over_temp_flag = false;
+            over_temp_counter = 0;
+            lcd_print("        ");
+            lcd_print("RESTART");
+            _delay_ms(1000);
+        }
+        return;
+    }
+
+
     if (temp_sense > FILTER_TMP){
         check_filter = true;
     } else {
@@ -433,37 +445,33 @@ void overtemp_check(float temp_sense){
     }
 
     if (temp_sense > OVERTEMP_SETPOINT) {
-        if (over_temp_counter <= 50) {
+        if (over_temp_counter <= 30) {
             over_temp_counter++;
         } else {
-            display_overtemp();
             motor_speed = 0;
             set_motor_speed();
+            display_overtemp();
             pid_reset(&pressure_pid); // Reset PID when shutting down
             over_temp_flag = true;
+            _delay_ms(1000);
             return;
         }
     } else {
         if (over_temp_counter > 0) over_temp_counter--;
     }
-    if (temp_sense <= OVERTEMP_EXIT && over_temp_flag == true ){
-        over_temp_flag = false;
-        lcd_print("        ");
-        lcd_print("RESTART");
-        _delay_ms(1000);
-    }
+
 }
 
 
 
 void motor_control_loop(void) {
-    uint16_t pot_setting, pressure, adc_value;
-    float temp_sense;
+    uint16_t pot_setting, pressure, adc_value, temp_sense;
     static uint32_t last_time = 0;
     uint8_t sleep_deviation_scaled = 0;
     
     // Read temperature
     adc_value = read_adc(0);
+    //uint16_t temp_raw = adc_value;
     temp_sense = (adc_value - TEMP_OFFSET) * TEMP_MULT;
     
     overtemp_check(temp_sense);
@@ -478,6 +486,7 @@ void motor_control_loop(void) {
         set_motor_speed();
         display_shutdown();
         motor_running = false;
+        _delay_ms(10000);
         return;
     }
     
@@ -532,7 +541,7 @@ void motor_control_loop(void) {
         // Calculate seconds: each loop is MOTOR_LOOP_DELAY ms, so increment every (1000/MOTOR_LOOP_DELAY) loops
         static uint16_t powerpause_loop_counter = 0;
         powerpause_loop_counter++;
-        if (powerpause_loop_counter >= (24000 / MOTOR_LOOP_DELAY)) {
+        if (powerpause_loop_counter >= (1000 / MOTOR_LOOP_TIME)) {
             powerpause_timer++;
             powerpause_loop_counter = 0;
             
@@ -612,6 +621,8 @@ void motor_control_loop(void) {
             lcd_print("IDLESOON");  // 10 seconds before idle - intermittent beep
         }  else {
             snprintf(buf, 9, "%u.%u PSI", print_pressure / 100, print_pressure % 100);
+            //dtostrf(temp_sense, 5, 1, buf); // width=5, 1 decimal place (adjust as needed)
+            //snprintf(buf, 9, "%2u, %2u", temp_sense, temp_raw);
             lcd_print(buf);
 
         }
