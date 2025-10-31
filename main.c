@@ -472,7 +472,7 @@ void motor_control_loop(void) {
     // Read temperature
     adc_value = read_adc(0);
     //uint16_t temp_raw = adc_value;
-    temp_sense = (adc_value - TEMP_OFFSET) * TEMP_MULT;
+    temp_sense = (adc_value - TEMP_OFFSET) * TEMP_MULT / TEMP_DIVISOR;
     
     overtemp_check(temp_sense);
 
@@ -622,7 +622,7 @@ void motor_control_loop(void) {
         }  else {
             snprintf(buf, 9, "%u.%u PSI", print_pressure / 100, print_pressure % 100);
             //dtostrf(temp_sense, 5, 1, buf); // width=5, 1 decimal place (adjust as needed)
-            //snprintf(buf, 9, "%2u, %2u", temp_sense, temp_raw);
+            //snprintf(buf, 9, "%2u", temp_sense);
             lcd_print(buf);
 
         }
