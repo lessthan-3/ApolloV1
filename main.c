@@ -495,7 +495,7 @@ void motor_control_loop(void) {
     if (adc_value < PRESS_OFFSET) {
         pressure = 0;
     } else {
-        pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR;
+        pressure = (((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR) + 20;
     }
     
     pressure = (pressure + pressure + last_pressure)/3;
@@ -587,12 +587,20 @@ void motor_control_loop(void) {
             return;
         }
     }
-    // Update motor speed from PID
-    pressure_pid.setpoint = (float)pot_setting;
 
-    float pid_output = pid_calculate(&pressure_pid, (float)pressure, .1f);
-    
-    motor_speed = (uint16_t)(pid_output + 0.5f); 
+
+    // Update motor speed from PID
+
+
+    if(pot_setting > 800){
+        motor_speed = 100;
+    } else{
+        pressure_pid.setpoint = (float)pot_setting;
+
+        float pid_output = pid_calculate(&pressure_pid, (float)pressure, .1f);
+        
+        motor_speed = (uint16_t)(pid_output + 0.5f); 
+    }
 
     //bounding speed
     if (motor_speed > 100) motor_speed = 100;
@@ -620,10 +628,13 @@ void motor_control_loop(void) {
         } else if(idle_state == 2){
             lcd_print("IDLESOON");  // 10 seconds before idle - intermittent beep
         }  else {
-            snprintf(buf, 9, "%u.%u PSI", print_pressure / 100, print_pressure % 100);
+            snprintf(buf, 9, "%u.%01u PSI",
+                    print_pressure / 100,
+                    (print_pressure % 100) / 10);
             //dtostrf(temp_sense, 5, 1, buf); // width=5, 1 decimal place (adjust as needed)
             //snprintf(buf, 9, "%2u", temp_sense);
             lcd_print(buf);
+            
 
         }
        
