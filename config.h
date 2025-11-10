@@ -74,6 +74,10 @@
 #define IDLE_MOTOR_SPEED 30
 #define IDLE_PRESSURE_THRESHOLD 187
 
+// Soft-start configuration
+#define SOFT_START_DURATION_MS 2000  // Ramp up over 2 seconds
+#define SOFT_START_LOOPS (SOFT_START_DURATION_MS / MOTOR_LOOP_TIME)  // Number of loops to ramp
+
 volatile uint8_t over_temp_counter = 0;
 
 
@@ -138,7 +142,7 @@ uint16_t power_timer = 0;
 
 uint16_t last_pressure =0;
 
-uint16_t idle_range = 8;
+uint16_t idle_range = 7;
 
 // PID structure to hold state
 typedef struct {
@@ -185,6 +189,10 @@ uint8_t frequency = 120;
 uint8_t motor_incr_max = 25;
 uint8_t motor_incr_max_down = 10;
 static bool idle_mode = false;
+
+// Soft-start variables
+static uint16_t soft_start_counter = 0;  // Tracks loops since motor restart
+static bool soft_start_active = false;   // True during soft-start period
 
 // PowerPause shutdown variables
 #define POWERPAUSE_TIMEOUT_SEC 900  // 15 minutes = 900 seconds

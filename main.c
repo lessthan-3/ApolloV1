@@ -495,7 +495,7 @@ void motor_control_loop(void) {
     if (adc_value < PRESS_OFFSET) {
         pressure = 0;
     } else {
-        pressure = (((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR) + 20;
+        pressure = (((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR);
     }
     
     pressure = (pressure + pressure + last_pressure)/3;
@@ -526,11 +526,21 @@ void motor_control_loop(void) {
         motor_running = false;  // Motor is not running
         display_hour_meter();  // Display hour meter when motor is off
         idle_mode = false;
+        
+        // Reset soft-start when motor is turned off
+        soft_start_active = false;
+        soft_start_counter = 0;
+        
         return;
     }
 
     // Motor is running for hour meter purposes
     motor_running = true;
+    
+    // Activate soft-start if motor just started (was off and now turning on)
+    if (soft_start_counter == 0 && !soft_start_active) {
+        soft_start_active = true;
+    }
     
     // Update hour meter
     hour_meter_update();
@@ -605,17 +615,33 @@ void motor_control_loop(void) {
     //bounding speed
     if (motor_speed > 100) motor_speed = 100;
     if (motor_speed < 10) motor_speed = 10;
+    
+    // Apply soft-start ramping
+    if (soft_start_active) {
+        if (soft_start_counter < SOFT_START_LOOPS) {
+            // Ramp from 0 to target speed over SOFT_START_LOOPS
+            uint16_t target_speed = motor_speed;
+            motor_speed = (target_speed * soft_start_counter) / SOFT_START_LOOPS;
+            
+            // Ensure minimum speed during ramp
+            if (motor_speed < 10 && soft_start_counter > 0) {
+                motor_speed = 10;
+            }
+            
+            soft_start_counter++;
+        } else {
+            // Soft-start complete
+            soft_start_active = false;
+        }
+    }
+    
     last_motor_speed = motor_speed;
 
 
     //Display    
     
-    //smoothing of display
-    if(print_pressure + 10 < pressure){
-        print_pressure = pressure;
-    } else if(print_pressure - 10 > pressure){
-        print_pressure = pressure;
-    }  else print_pressure = pot_setting;
+    //no smoothing of display
+    print_pressure = pressure;
     if (display_count == 0){
         seconds++;
         lcd_print("        ");
