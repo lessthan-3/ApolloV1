@@ -71,7 +71,7 @@
 
 #define MOTOR_LOOP_DELAY 8
 #define MOTOR_LOOP_TIME 15
-#define IDLE_MOTOR_SPEED 25
+#define IDLE_MOTOR_SPEED 30
 #define IDLE_PRESSURE_THRESHOLD 187
 
 volatile uint8_t over_temp_counter = 0;
