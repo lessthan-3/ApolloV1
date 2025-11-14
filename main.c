@@ -407,7 +407,7 @@ void beeper_update(void) {
             // At 8ms loop delay: 0.5s = 62.5 loops, 1.5s = 187.5 loops
             if (beeper_counter < 20) {  // ~0.5 seconds on
                 beeper_on_func();
-            } else if (beeper_counter < 100) {  // ~1.5 seconds off (total 2s cycle)
+            } else if (beeper_counter < 40) {  // ~1.5 seconds off (total 2s cycle)
                 beeper_off_func();
             } else {
                 beeper_counter = 0;  // Reset for next cycle
@@ -426,16 +426,16 @@ void beeper_update(void) {
 }
 
 void overtemp_check(uint16_t temp_sense){
-    if(over_temp_flag == true){
-        if (temp_sense <= OVERTEMP_EXIT){
-            over_temp_flag = false;
-            over_temp_counter = 0;
-            lcd_print("        ");
-            lcd_print("RESTART");
-            _delay_ms(1000);
-        }
-        return;
-    }
+    // if(over_temp_flag == true){
+    //     if (temp_sense <= OVERTEMP_EXIT){
+    //         over_temp_flag = false;
+    //         over_temp_counter = 0;
+    //         lcd_print("        ");
+    //         lcd_print("RESTART");
+    //         _delay_ms(1000);
+    //     }
+    //     return;
+    // }
 
 
     if (temp_sense > FILTER_TMP){
@@ -474,11 +474,15 @@ void motor_control_loop(void) {
     //uint16_t temp_raw = adc_value;
     temp_sense = (adc_value - TEMP_OFFSET) * TEMP_MULT / TEMP_DIVISOR;
     
+
+
+
     overtemp_check(temp_sense);
 
     if(over_temp_flag){
         return;
     }
+  
     
     // Check if system is in shutdown mode (after 15 min PowerPause timeout)
     if(shutdown_flag){
