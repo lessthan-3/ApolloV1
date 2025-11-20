@@ -499,7 +499,7 @@ void motor_control_loop(void) {
     if (adc_value < PRESS_OFFSET) {
         pressure = 0;
     } else {
-        pressure = (((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR);
+        pressure = (((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR) + 20;
     }
     
     pressure = (pressure + pressure + last_pressure)/3;
@@ -721,7 +721,7 @@ void motor_control_loop(void) {
             if (adc_value < PRESS_OFFSET) {
                 pressure = 0;
             } else {
-                pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR;
+                pressure = ((adc_value - PRESS_OFFSET) * PRESS_MULTIPLIER) / PRESS_DIVISOR + 20;
             }
             lcd_print("        ");
             lcd_print("PWRPAUSE");
