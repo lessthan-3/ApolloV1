@@ -511,7 +511,7 @@ void motor_control_loop(void) {
     pot_setting = adc_value;
     
     if (pot_setting >= 15) {
-        pot_setting = ((pot_setting + 4) * 28) /45 + 200;
+        pot_setting = ((pot_setting + 4) * 32) /45 + 200;
     } else {
         pot_setting = 0;
     }
@@ -606,9 +606,15 @@ void motor_control_loop(void) {
     // Update motor speed from PID
 
 
-    if(pot_setting > 800){
+    if(pot_setting > 900){
         motor_speed = 100;
+        isMax = true;
     } else{
+        isMax = false;
+        if(max_pressure_recorded > 0){
+            max_pressure_recorded = 0;
+        }
+
         pressure_pid.setpoint = (float)pot_setting;
 
         float pid_output = pid_calculate(&pressure_pid, (float)pressure, .1f);
@@ -662,7 +668,7 @@ void motor_control_loop(void) {
                     print_pressure / 100,
                     (print_pressure % 100) / 10);
             //dtostrf(temp_sense, 5, 1, buf); // width=5, 1 decimal place (adjust as needed)
-            //snprintf(buf, 9, "%2u", temp_sense);
+            //snprintf(buf, 9, "%2u,%2u", print_pressure, inside_count);
             lcd_print(buf);
             
 
@@ -683,11 +689,34 @@ void motor_control_loop(void) {
     if (!idle_mode) {
 
 
-        if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
-            (pressure < (pot_setting + sleep_deviation_scaled))) {
-                    inside_count++;
-        } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
-        else inside_count = 0;
+        //TODO: inside count for when motor is at max speed
+
+        if(isMax){
+            if(pressure > max_pressure_recorded){
+                max_pressure_recorded = pressure;
+            }
+            //seperate counter function for max setting
+            //instead checking if last pressure deviates from current pressure
+            if (pressure >= max_pressure_recorded - 30) {
+                        inside_count++;
+            } else if(inside_count >= 250) inside_count = inside_count - 250;
+            else{ inside_count = 0; 
+            max_pressure_recorded = pressure;
+            }
+        }
+
+        else{
+            if ((pressure > (pot_setting - sleep_deviation_scaled)) &&
+                (pressure < (pot_setting + sleep_deviation_scaled))) {
+                        inside_count++;
+            } else if(inside_count >= idle_decrease) inside_count = inside_count - idle_decrease;
+            else inside_count = 0;
+
+        }
+
+
+
+
 
         // Update idle state and beeper warnings
         if(inside_count >= IDLE_OUTSIDE_THRESHOLD_SECOND_WARN){

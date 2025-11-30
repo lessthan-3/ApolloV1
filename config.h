@@ -73,7 +73,7 @@
 #define MOTOR_LOOP_TIME 15
 
 //19 for 50Hz and 30 for 60Hz
-#define IDLE_MOTOR_SPEED 30
+#define IDLE_MOTOR_SPEED 19
 #define IDLE_PRESSURE_THRESHOLD 187
 
 // Soft-start configuration
@@ -87,7 +87,7 @@ volatile uint8_t over_temp_counter = 0;
 #define MAXDELAY50 310
 
 //42 for 50Hz and 35 for 60Hz
-#define MINDELAY 35
+#define MINDELAY 42
 
 static uint16_t maxdelay = MAXDELAY50;
 
@@ -106,6 +106,7 @@ uint16_t print_pressure = 0;
 static bool over_temp_flag = false;
 uint16_t display_count = 0;
 
+uint16_t max_pressure_recorded = 0;
 
 // uint16_t IDLE_OUTSIDE_THRESHOLD = 1000;
 // uint16_t IDLE_OUTSIDE_THRESHOLD_FIRST_WARN = 500;   // 10 seconds before idle (intermittent beep)
@@ -147,6 +148,8 @@ uint16_t power_timer = 0;
 uint16_t last_pressure =0;
 
 uint16_t idle_range = 8;
+
+bool isMax = false; //used for when pot setting is at max
 
 // PID structure to hold state
 typedef struct {
