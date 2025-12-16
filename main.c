@@ -659,10 +659,6 @@ void motor_control_loop(void) {
 
         if(check_filter){
             lcd_print("CHK FLTR");
-        } else if(idle_state == 3){
-            lcd_print("IDLE NOW");  // 5 seconds before idle - solid beep
-        } else if(idle_state == 2){
-            lcd_print("IDLESOON");  // 10 seconds before idle - intermittent beep
         }  else {
             snprintf(buf, 9, "%u.%01u PSI",
                     print_pressure / 100,
@@ -743,7 +739,7 @@ void motor_control_loop(void) {
             beeper_state = 0;  // Turn off beeper when entering idle mode
             beeper_off_func();
             lcd_print("        ");
-            lcd_print("IDLE");
+            lcd_print("PWRPAUSE");
             seconds = 0;
             _delay_ms(6000);
             adc_value = read_adc(6);
