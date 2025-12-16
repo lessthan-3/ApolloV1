@@ -73,7 +73,7 @@
 #define MOTOR_LOOP_TIME 15
 
 //19 for 50Hz and 30 for 60Hz
-#define IDLE_MOTOR_SPEED 30
+#define IDLE_MOTOR_SPEED 19
 #define IDLE_PRESSURE_THRESHOLD 187
 
 // Soft-start configuration
@@ -87,7 +87,11 @@ volatile uint8_t over_temp_counter = 0;
 #define MAXDELAY50 310
 
 //42 for 50Hz and 35 for 60Hz
-#define MINDELAY 35
+#define MINDELAY 42
+
+//tmp variable for controlling MINDELAY 
+uint16_t mindelay = MINDELAY;
+
 
 static uint16_t maxdelay = MAXDELAY50;
 

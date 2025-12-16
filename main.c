@@ -133,7 +133,7 @@ void set_motor_speed(void) {
         motor_speed_calc = motor_speed * maxdelay / 100;
 
         motor_pwm = maxdelay - motor_speed_calc; 
-        if (motor_pwm < MINDELAY) motor_pwm = MINDELAY;
+        if (motor_pwm < mindelay) motor_pwm = mindelay;
     }
 }
 
@@ -307,14 +307,14 @@ void pid_setup(pid_controller_t *pid) {
 		while_ticks++;
 		adc_value = read_adc(7);
         
-        delay = adc_value / 10;
+        delay = adc_value / 50 + 20;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "P:%2d", delay);
         lcd_print(buf);
         _delay_ms(100);
     }
-    idle_range = delay;
+    mindelay = delay;
     
 }
 
@@ -836,7 +836,7 @@ int main(void) {
     // }
 
 
-    //pid_setup(&pressure_pid);
+    pid_setup(&pressure_pid);
 	
 	
 	
