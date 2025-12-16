@@ -307,7 +307,7 @@ void pid_setup(pid_controller_t *pid) {
 		while_ticks++;
 		adc_value = read_adc(7);
         
-        delay = adc_value / 50 + 20;
+        delay = adc_value / 30 + 30;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "P:%2d", delay);
