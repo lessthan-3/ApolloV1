@@ -74,6 +74,12 @@
 
 //19 for 50Hz and 30 for 60Hz
 #define IDLE_MOTOR_SPEED 19
+//50 for 50Hz and 35 for 60Hz
+#define MINDELAY 50
+
+
+
+
 #define IDLE_PRESSURE_THRESHOLD 187
 
 // Soft-start configuration
@@ -85,12 +91,6 @@ volatile uint8_t over_temp_counter = 0;
 
 #define MAXDELAY 255
 #define MAXDELAY50 310
-
-//42 for 50Hz and 35 for 60Hz
-#define MINDELAY 42
-
-//tmp variable for controlling MINDELAY 
-uint16_t mindelay = MINDELAY;
 
 
 static uint16_t maxdelay = MAXDELAY50;
@@ -241,6 +241,7 @@ void display_overtemp(void);
 void hour_meter_init(void);
 void hour_meter_update(void);
 void hour_meter_save(void);
+void hour_meter_reset(void);
 void display_hour_meter(void);
 
 // Beeper functions

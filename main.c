@@ -133,7 +133,7 @@ void set_motor_speed(void) {
         motor_speed_calc = motor_speed * maxdelay / 100;
 
         motor_pwm = maxdelay - motor_speed_calc; 
-        if (motor_pwm < mindelay) motor_pwm = mindelay;
+        if (motor_pwm < MINDELAY) motor_pwm = MINDELAY;
     }
 }
 
@@ -307,14 +307,14 @@ void pid_setup(pid_controller_t *pid) {
 		while_ticks++;
 		adc_value = read_adc(7);
         
-        delay = adc_value / 30 + 30;
+        delay = adc_value / 10;
         lcd_print("        ");
         // Display KP value with 1 decimal place
         snprintf(buf, 9, "P:%2d", delay);
         lcd_print(buf);
         _delay_ms(100);
     }
-    mindelay = delay;
+    idle_range = delay;
     
 }
 
@@ -355,6 +355,16 @@ void hour_meter_update(void) {
 // Save hour meter to EEPROM
 void hour_meter_save(void) {
     eeprom_update_dword((uint32_t*)EEPROM_HOUR_METER_ADDR, hour_meter_tenths);
+}
+
+// Reset hour meter to zero
+void hour_meter_reset(void) {
+    hour_meter_tenths = 0;
+    hour_meter_counter = 0;
+    hour_meter_save();
+    lcd_print("        ");
+    lcd_print("HR RESET");
+    _delay_ms(2000);
 }
 
 // Display hour meter on LCD
@@ -816,6 +826,12 @@ int main(void) {
 
     pid_init(&pressure_pid, PID_KP, PID_KI, PID_KD);
     hour_meter_init();  // Initialize hour meter from EEPROM
+    
+    // Check if dipswitch on PC5 is on (low = on due to pullup)
+    if (!(PINC & (1 << PC5))) {
+        hour_meter_reset();
+    }
+    
     maxdelay = MAXDELAY;
     //detect_ac_frequency();
     // if(maxdelay== MAXDELAY50){
@@ -836,7 +852,7 @@ int main(void) {
     // }
 
 
-    pid_setup(&pressure_pid);
+    //pid_setup(&pressure_pid);
 	
 	
 	
